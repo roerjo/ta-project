@@ -65,3 +65,52 @@ resource "aws_codepipeline" "pipeline" {
     }
   }
 }
+
+resource "aws_iam_policy" "codepipeline_policy" {
+  name = "${var.app_name}-codepipeline-policy"
+
+  policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "codebuild:BatchGetBuilds",
+        "codebuild:StartBuild"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect":"Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:GetObjectVersion",
+        "s3:GetBucketVersioning",
+        "s3:PutObject"
+      ],
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "codestar-connections:*",
+      "Resource": "*"
+    }
+  ]
+}
+POLICY
+
+}
+
+resource "aws_iam_role_policy_attachment" "codepipeline_role_policy_attach" {
+  role       = aws_iam_role.codepipeline_role.name
+  policy_arn = aws_iam_policy.codepipeline_policy.arn
+}
