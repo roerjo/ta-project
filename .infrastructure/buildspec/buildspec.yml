@@ -1,0 +1,27 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - ECR_URI=274710370922.dkr.ecr.us-east-1.amazonaws.com
+      - REPOSITORY_URI=$ECR_URI/ta-project
+      - TIMESTAMP=`date "+%Y%m%d%H%M%S"`
+      - IMAGE_TAG="feature--$TIMESTAMP"
+      - LATEST="feature-latest"
+      - aws --version
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login -u AWS --password-stdin $ECR_URI
+
+  build:
+    commands:
+      - echo Building the Docker image...
+      - echo Pull in latest image to cache from...
+      - docker pull $REPOSITORY_URI:$LATEST || true
+      - docker build -t $REPOSITORY_URI:$LATEST --cache-from $REPOSITORY_URI:$LATEST .
+      - docker tag $REPOSITORY_URI:$LATEST $REPOSITORY_URI:$IMAGE_TAG
+
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker images...
+      - docker push $REPOSITORY_URI:$LATEST
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
