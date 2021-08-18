@@ -17,7 +17,15 @@ resource "aws_ecs_task_definition" "nginx_site" {
           "protocol" : "tcp",
           "containerPort" : 80
         }
-      ]
+      ],
+      "logConfiguration" : {
+        "logDriver" : "awslogs",
+        "options" : {
+          "awslogs-group" : aws_cloudwatch_log_group.nginx_log.name,
+          "awslogs-region" : "us-east-1",
+          "awslogs-stream-prefix" : "ecs"
+        }
+      }
     }
   ])
 }
@@ -75,4 +83,14 @@ POLICY
 resource "aws_iam_role_policy_attachment" "task_role_policy_attach" {
   role       = aws_iam_role.task_role.name
   policy_arn = aws_iam_policy.task_role_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "role_cw_logs_policy_attach" {
+  role       = aws_iam_role.task_role.name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+}
+
+resource "aws_cloudwatch_log_group" "nginx_log" {
+  name = "/ecs/${var.app_name}/app"
+  retention_in_days = 1
 }
