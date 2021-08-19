@@ -1,5 +1,9 @@
 version: 0.2
 
+env:
+  parameter-store:
+    D_USER: DOCKERHUB_USERNAME
+    D_PW: DOCKERHUB_PASSWORD
 phases:
   pre_build:
     commands:
@@ -16,12 +20,16 @@ phases:
       - echo Building the Docker image...
       - echo Pull in latest image to cache from...
       - docker pull $REPOSITORY_URI:$LATEST || true
+      - docker logout
+      - docker login -u $D_USER -p $D_PW 
       - docker build -t $REPOSITORY_URI:$LATEST --cache-from $REPOSITORY_URI:$LATEST .
       - docker tag $REPOSITORY_URI:$LATEST $REPOSITORY_URI:$IMAGE_TAG
+      - docker logout
 
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker images...
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login -u AWS --password-stdin $ECR_URI
       - docker push $REPOSITORY_URI:$LATEST
       - docker push $REPOSITORY_URI:$IMAGE_TAG

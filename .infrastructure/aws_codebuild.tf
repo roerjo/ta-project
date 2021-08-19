@@ -67,7 +67,8 @@ resource "aws_iam_policy" "codebuild_logging_policy" {
         "ecr:GetDownloadUrlForLayer",
         "ecr:InitiateLayerUpload",
         "ecr:PutImage",
-        "ecr:UploadLayerPart"
+        "ecr:UploadLayerPart",
+        "ssm:GetParameters"
       ],
       "Resource": "*",
       "Effect": "Allow"
