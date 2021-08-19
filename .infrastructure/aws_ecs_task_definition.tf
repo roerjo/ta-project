@@ -91,6 +91,6 @@ resource "aws_iam_role_policy_attachment" "role_cw_logs_policy_attach" {
 }
 
 resource "aws_cloudwatch_log_group" "nginx_log" {
-  name = "/ecs/${var.app_name}/app"
+  name              = "/ecs/${var.app_name}/app"
   retention_in_days = 1
 }
